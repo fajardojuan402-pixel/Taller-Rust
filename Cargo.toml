@@ -1,0 +1,11 @@
+# Workspace con los crates que SÍ deben compilar.
+# Los fragmentos que NO compilan viven en */rust/no-compila/ y no forman
+# parte del workspace: los compilan solo los scripts run-expect-fail.sh.
+[workspace]
+resolver = "2"
+members = [
+    "modulos/m1-limites/rust",
+    "modulos/m2-ownership/rust",
+    "modulos/m3-concurrencia/rust",
+    "minivec",
+]

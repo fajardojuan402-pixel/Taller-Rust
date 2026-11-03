@@ -1,0 +1,13 @@
+# Forzar fin de linea LF en scripts y codigo: los scripts shell deben
+# conservar LF o bash falla dentro del contenedor (error $'\r').
+*.sh    text eol=lf
+*.rs    text eol=lf
+*.c     text eol=lf
+*.java  text eol=lf
+*.toml  text eol=lf
+Makefile text eol=lf
+Dockerfile text eol=lf
+
+# Imagenes y binarios: tratar como binario (sin conversion de EOL).
+*.png   binary
+*.docx  binary

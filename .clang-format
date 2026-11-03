@@ -1,0 +1,7 @@
+# Estilo de los fragmentos C del documento del taller.
+BasedOnStyle: LLVM
+IndentWidth: 4
+AllowShortFunctionsOnASingleLine: All
+AllowShortLoopsOnASingleLine: true
+AlignTrailingComments:
+  Kind: Leave

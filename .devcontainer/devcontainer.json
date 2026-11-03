@@ -1,0 +1,21 @@
+{
+  "name": "Laboratorio memoria C/Rust/Java",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/lab",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/lab,type=bind",
+  "containerEnv": {
+    "LAB_IN_CONTAINER": "1"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "ms-vscode.cpptools",
+        "redhat.java"
+      ]
+    }
+  }
+}

@@ -1,0 +1,6 @@
+# Artefactos de compilación (nunca se versionan)
+/build/
+target/
+*.class
+*.o
+*.out

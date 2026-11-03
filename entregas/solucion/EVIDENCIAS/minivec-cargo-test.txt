@@ -1,0 +1,24 @@
+   Compiling minivec v0.1.0 (/lab/minivec)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.46s
+     Running unittests src/lib.rs (/lab/target/debug/deps/minivec-f43dbb67866c1390)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/api.rs (/lab/target/debug/deps/api-70a37bde38bd5459)
+
+running 4 tests
+test expone_el_defecto ... ok
+test push_y_get ... ok
+test vacio_al_crear ... ok
+test pop_en_orden_inverso ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+   Doc-tests minivec
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

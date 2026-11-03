@@ -1,0 +1,22 @@
+[package]
+name = "m1-limites"
+version = "0.1.0"
+edition = "2021"
+publish = false
+# `cargo run` sin --bin ejecuta el caso de get_unchecked, como en el documento.
+default-run = "get_unchecked"
+
+# rust_const.rs NO está aquí: puede no compilar (lint unconditional_panic).
+# Está en no-compila/ y lo compila run-expect-fail.sh con rustc.
+
+[[bin]]
+name = "rust_dyn"
+path = "src/bin/rust_dyn.rs"
+
+[[bin]]
+name = "get_unchecked"
+path = "src/bin/get_unchecked.rs"
+
+[[bin]]
+name = "overflow"
+path = "src/bin/overflow.rs"

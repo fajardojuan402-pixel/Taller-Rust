@@ -1,0 +1,12 @@
+[package]
+name = "m3-concurrencia"
+version = "0.1.0"
+edition = "2021"
+publish = false
+default-run = "deadlock"
+
+# rc_hilos.rs NO compila: está en no-compila/, fuera del workspace.
+
+[[bin]]
+name = "deadlock"
+path = "src/bin/deadlock.rs"

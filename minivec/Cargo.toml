@@ -1,0 +1,6 @@
+[package]
+name = "minivec"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Vector de enteros con memoria gestionada manualmente y API pública segura"

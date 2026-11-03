@@ -1,0 +1,7 @@
+== CarreraAtomic (3 ejecuciones, debe dar 400000) ==
+400000
+400000
+400000
+== deadlock_fix (debe terminar, orden global de locks) ==
+terminado sin deadlock
+deadlock_fix exit: 0

@@ -1,0 +1,12 @@
+[package]
+name = "m2-ownership"
+version = "0.1.0"
+edition = "2021"
+publish = false
+default-run = "refcell"
+
+# Los puzzles A y B NO compilan: están en no-compila/, fuera del workspace.
+
+[[bin]]
+name = "refcell"
+path = "src/bin/refcell.rs"
