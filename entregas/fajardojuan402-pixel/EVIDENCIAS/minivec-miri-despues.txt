@@ -1,12 +1,12 @@
    Compiling minivec v0.1.0 (/lab/minivec)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.18s
-     Running unittests src/lib.rs (/lab/target/miri/x86_64-unknown-linux-gnu/debug/deps/minivec-e63defb9dc702fd7)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.33s
+     Running unittests src/lib.rs (target/miri/x86_64-unknown-linux-gnu/debug/deps/minivec-e63defb9dc702fd7)
 
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
 
-     Running tests/api.rs (/lab/target/miri/x86_64-unknown-linux-gnu/debug/deps/api-21cc80f96ea723fc)
+     Running tests/api.rs (target/miri/x86_64-unknown-linux-gnu/debug/deps/api-21cc80f96ea723fc)
 
 running 4 tests
 test expone_el_defecto ... ok
@@ -22,4 +22,3 @@ running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-EXITCODE 0

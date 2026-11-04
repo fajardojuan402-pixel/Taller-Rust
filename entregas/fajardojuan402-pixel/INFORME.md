@@ -503,8 +503,11 @@ Análisis con el criterio de profundidad:
 1. **Propiedad deseada:** soundness — desde código seguro no debe poder
    provocarse UB a través de la API pública.
 2. **Mecanismo que la impone o comprueba:** el contrato interno (la comprobación
-   `indice < self.len`) respalda los bloques `unsafe`; los comentarios `// SAFETY:`
-   documentan qué invariante justifica cada `unsafe`.
+   `indice < self.len`) respalda los bloques `unsafe`. Los **seis** bloques
+   `unsafe` del archivo están documentados con un comentario `// SAFETY:` que
+   explica qué invariante los justifica: los tres de la API (`push`, `get`,
+   `pop`) y también los de la gestión de memoria en `crecer` (`alloc` y
+   `realloc`) y en `Drop` (`dealloc`).
 3. **Momento de detección:** el defecto original se detecta **en ejecución** con
    Miri (interpretación con modelo de memoria estricto); no lo detecta el
    compilador ni `cargo test` de forma fiable.
@@ -513,8 +516,9 @@ Análisis con el criterio de profundidad:
 5. **Evidencia:** salida de Miri **antes** (UB) en
    `EVIDENCIAS/minivec-miri-antes.txt` y **después** (limpia, 4 tests ok) en
    `EVIDENCIAS/minivec-miri-despues.txt`; el cambio aplicado es `<=` → `<` en
-   `MiniVec::get` (más comentarios `// SAFETY:` en cada bloque `unsafe` de
-   `minivec/src/lib.rs`).
+   `MiniVec::get`. Además se documentó cada uno de los **seis** bloques `unsafe`
+   de `minivec/src/lib.rs` con un comentario `// SAFETY:` (los de `push`, `get`,
+   `pop`, y los de `crecer` —`alloc` y `realloc`— y `Drop` —`dealloc`—).
 
 **Evidencias visuales.**
 

@@ -85,9 +85,19 @@ impl MiniVec {
         let nueva_cap = if self.cap == 0 { 4 } else { self.cap * 2 };
         let nuevo_layout = Layout::array::<i32>(nueva_cap).expect("capacidad demasiado grande");
         let nuevo_ptr = if self.cap == 0 {
+            // SAFETY: `nuevo_layout` tiene tamaño > 0 (nueva_cap >= 4) y es un
+            // layout válido para `[i32; nueva_cap]`, que es el contrato que
+            // exige `alloc::alloc`. El puntero devuelto se valida con
+            // `NonNull::new` más abajo (null => handle_alloc_error).
             unsafe { alloc::alloc(nuevo_layout) }
         } else {
             let viejo_layout = Layout::array::<i32>(self.cap).unwrap();
+            // SAFETY: cuando `cap > 0`, `self.ptr` se asignó previamente con
+            // `viejo_layout` (el mismo `Layout::array::<i32>(cap)` usado aquí),
+            // como exige `realloc`. El nuevo tamaño `nuevo_layout.size()` es > 0
+            // y no desborda `isize` (lo garantiza `Layout::array` al no entrar
+            // en pánico). `realloc` preserva los primeros `cap` elementos ya
+            // inicializados; el puntero resultante se valida con `NonNull::new`.
             unsafe {
                 alloc::realloc(
                     self.ptr.as_ptr() as *mut u8,
@@ -114,6 +124,10 @@ impl Drop for MiniVec {
     fn drop(&mut self) {
         if self.cap > 0 {
             let layout = Layout::array::<i32>(self.cap).unwrap();
+            // SAFETY: si `cap > 0`, `self.ptr` se asignó con exactamente este
+            // mismo `Layout::array::<i32>(cap)` (en `crecer`), que es lo que
+            // `dealloc` exige. `Drop::drop` se ejecuta una sola vez por valor,
+            // así que el bloque no libera dos veces ni usa el puntero después.
             unsafe {
                 alloc::dealloc(self.ptr.as_ptr() as *mut u8, layout);
             }
