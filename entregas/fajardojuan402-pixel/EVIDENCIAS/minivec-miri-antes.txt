@@ -1,0 +1,73 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.45s
+     Running unittests src/lib.rs (/lab/target/miri/x86_64-unknown-linux-gnu/debug/deps/minivec-e63defb9dc702fd7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/api.rs (/lab/target/miri/x86_64-unknown-linux-gnu/debug/deps/api-21cc80f96ea723fc)
+
+running 4 tests
+test expone_el_defecto ... error: Undefined Behavior: reading memory at alloc41376[0x8..0xc], but memory is uninitialized at [0x8..0xc], and this operation requires initialized memory
+   --> /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/num.rs:599:5
+    |
+599 |     impl_Display!(i8, u8, i16, u16, i32, u32, i64, u64, isize, usize; as u64 into display_u64);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Undefined Behavior occurred here
+    |
+    = help: this indicates a bug in the program: it performed an invalid operation, and caused Undefined Behavior
+    = help: see https://doc.rust-lang.org/nightly/reference/behavior-considered-undefined.html for further information
+    = note: BACKTRACE on thread `expone_el_defec`:
+    = note: inside `core::fmt::num::imp::<impl std::fmt::Display for i32>::fmt` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/num.rs:164:45: 164:50
+    = note: inside `core::fmt::num::<impl std::fmt::Debug for i32>::fmt` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/num.rs:91:25: 91:51
+    = note: inside `<&i32 as std::fmt::Debug>::fmt` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:2658:62: 2658:82
+    = note: inside `<&&i32 as std::fmt::Debug>::fmt` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:2658:62: 2658:82
+    = note: inside closure at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/builders.rs:330:29: 330:41
+    = note: inside closure at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/builders.rs:355:17: 355:36
+    = note: inside `std::result::Result::<(), std::fmt::Error>::and_then::<(), {closure@std::fmt::DebugTuple<'_, '_>::field_with<{closure@std::fmt::DebugTuple<'_, '_>::field::{closure#0}}>::{closure#0}}>` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:1486:22: 1486:27
+    = note: inside `std::fmt::DebugTuple::<'_, '_>::field_with::<{closure@std::fmt::DebugTuple<'_, '_>::field::{closure#0}}>` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/builders.rs:342:23: 357:11
+    = note: inside `std::fmt::DebugTuple::<'_, '_>::field` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/builders.rs:330:9: 330:42
+    = note: inside `std::fmt::Formatter::<'_>::debug_tuple_field1_finish` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:2404:9: 2404:30
+    = note: inside `<std::option::Option<&i32> as std::fmt::Debug>::fmt` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs:588:16: 588:21
+    = note: inside `<&std::option::Option<&i32> as std::fmt::Debug>::fmt` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:2658:62: 2658:82
+    = note: inside `<&dyn std::fmt::Debug as std::fmt::Debug>::fmt` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:2658:62: 2658:82
+    = note: inside `core::fmt::rt::Argument::<'_>::fmt` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/rt.rs:173:76: 173:95
+    = note: inside `std::fmt::write` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:1468:21: 1468:44
+    = note: inside `std::fmt::Formatter::<'_>::write_fmt` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:1918:13: 1918:33
+    = note: inside `<core::panic::panic_info::PanicMessage<'_> as std::fmt::Display>::fmt` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic/panic_info.rs:180:9: 180:43
+    = note: inside `<&core::panic::panic_info::PanicMessage<'_> as std::fmt::Display>::fmt` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:2658:62: 2658:82
+    = note: inside closure at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/panicking.rs:644:28: 644:63
+    = note: inside `std::option::Option::<std::string::String>::get_or_insert_with::<{closure@std::panicking::panic_handler::FormatStringPayload<'_>::fill::{closure#0}}>` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs:1805:26: 1805:29
+    = note: inside `std::panicking::panic_handler::FormatStringPayload::<'_>::fill` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/panicking.rs:641:13: 646:15
+    = note: inside `<std::panicking::panic_handler::FormatStringPayload<'_> as core::panic::PanicPayload>::get` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/panicking.rs:660:13: 660:24
+    = note: inside `std::panicking::panic_with_hook` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/panicking.rs:842:48: 842:61
+    = note: inside closure at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/panicking.rs:707:13: 712:14
+    = note: inside `std::sys::backtrace::__rust_end_short_backtrace::<{closure@std::panicking::panic_handler::{closure#0}}, !>` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/sys/backtrace.rs:174:18: 174:21
+    = note: inside `std::panicking::panic_handler` at /opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/panicking.rs:698:5: 714:7
+note: inside `expone_el_defecto`
+   --> minivec/tests/api.rs:47:5
+    |
+ 47 |     assert_eq!(fuera, None);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+note: inside closure
+   --> minivec/tests/api.rs:39:23
+    |
+ 38 | #[test]
+    | ------- in this attribute macro expansion
+ 39 | fn expone_el_defecto() {
+    |                       ^
+
+Uninitialized memory occurred at alloc41376[0x8..0xc], in this allocation:
+alloc41376 (Rust heap, size: 16, align: 4) {
+    01 00 00 00 02 00 00 00 __ __ __ __ __ __ __ __ — ........————————
+}
+
+note: some details are omitted, run with `MIRIFLAGS=-Zmiri-backtrace=full` for a verbose backtrace
+
+error: aborting due to 1 previous error
+
+error: test failed, to rerun pass `--test api`
+
+Caused by:
+  process didn't exit successfully: `/opt/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/bin/cargo-miri runner /lab/target/miri/x86_64-unknown-linux-gnu/debug/deps/api-21cc80f96ea723fc --include-ignored` (exit status: 1)
+note: test exited abnormally; to see the full output pass --no-capture to the harness.
+EXITCODE 1

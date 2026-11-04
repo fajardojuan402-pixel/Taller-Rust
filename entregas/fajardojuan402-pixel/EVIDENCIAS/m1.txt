@@ -1,0 +1,243 @@
+
+==================== C — índice calculado (compilador: gcc) ====================
+
+--- (a) -O0
+$ gcc -O0 c/indice.c -o /lab/build/m1/indice_a
+(sin mensajes del compilador)
+
+--- (a) ejecución: UB, resultado NO estable
+$ /lab/build/m1/indice_a
+32765
+>> código de salida: 0 (informativo, no se verifica)
+
+--- (b) -O2 -Wall -Wextra
+$ gcc -O2 -Wall -Wextra c/indice.c -o /lab/build/m1/indice_b
+(sin mensajes del compilador)
+
+--- (b) ejecución: UB, resultado NO estable
+$ /lab/build/m1/indice_b
+32767
+>> código de salida: 0 (informativo, no se verifica)
+
+--- (c) -g -O1 -fsanitize=address
+$ gcc -g -O1 -fsanitize=address c/indice.c -o /lab/build/m1/indice_c
+(sin mensajes del compilador)
+
+--- (c) ejecución con ASan
+$ /lab/build/m1/indice_c
+=================================================================
+==36==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x74ce45400034 at pc 0x5f2ca5b8c45d bp 0x7fffac136410 sp 0x7fffac136400
+READ of size 4 at 0x74ce45400034 thread T0
+    #0 0x5f2ca5b8c45c in main c/indice.c:11
+    #1 0x74ce4747a1c9  (/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)
+    #2 0x74ce4747a28a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2a28a) (BuildId: a4a7992a8e66555c8141ab2a08a8465ff6e0ea65)
+    #3 0x5f2ca5b8c184 in _start (/lab/build/m1/indice_c+0x1184) (BuildId: ff8f81cf35b45cd5bc6774c4bc44660b3f218fc0)
+
+Address 0x74ce45400034 is located in stack of thread T0 at offset 52 in frame
+    #0 0x5f2ca5b8c258 in main c/indice.c:7
+
+  This frame has 1 object(s):
+    [32, 52) 'values' (line 9) <== Memory access at offset 52 overflows this variable
+HINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork
+      (longjmp and C++ exceptions *are* supported)
+SUMMARY: AddressSanitizer: stack-buffer-overflow c/indice.c:11 in main
+Shadow bytes around the buggy address:
+  0x74ce453ffd80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x74ce453ffe00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x74ce453ffe80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x74ce453fff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x74ce453fff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x74ce45400000: f1 f1 f1 f1 00 00[04]f3 f3 f3 f3 f3 00 00 00 00
+  0x74ce45400080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x74ce45400100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x74ce45400180: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x74ce45400200: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x74ce45400280: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==36==ABORTING
+>> ESPERADO: falló como se esperaba (código 1; coincide /stack-buffer-overflow/)
+
+==================== C — overflow con INT_MAX y siempre_mayor (gcc y clang) ====================
+
+--- gcc -O0
+$ gcc -O0 c/overflow.c -o /lab/build/m1/overflow_gcc_O0
+(sin mensajes del compilador)
+
+--- gcc -O0 ejecución: UB
+$ /lab/build/m1/overflow_gcc_O0
+1
+>> código de salida: 0 (informativo, no se verifica)
+
+--- gcc -O2
+$ gcc -O2 c/overflow.c -o /lab/build/m1/overflow_gcc_O2
+(sin mensajes del compilador)
+
+--- gcc -O2 ejecución: UB (el compilador puede plegar la comparación)
+$ /lab/build/m1/overflow_gcc_O2
+1
+>> código de salida: 0 (informativo, no se verifica)
+
+--- gcc -fsanitize=undefined
+$ gcc -fsanitize=undefined c/overflow.c -o /lab/build/m1/overflow_gcc_ubsan
+(sin mensajes del compilador)
+
+--- gcc: ejecución con UBSan (gcc ya plegó la comparación: puede no haber reporte)
+$ /lab/build/m1/overflow_gcc_ubsan
+1
+>> código de salida: 0 (informativo, no se verifica)
+
+--- clang -O0
+$ clang -O0 c/overflow.c -o /lab/build/m1/overflow_clang_O0
+(sin mensajes del compilador)
+
+--- clang -O0 ejecución: UB
+$ /lab/build/m1/overflow_clang_O0
+0
+>> código de salida: 0 (informativo, no se verifica)
+
+--- clang -O2
+$ clang -O2 c/overflow.c -o /lab/build/m1/overflow_clang_O2
+(sin mensajes del compilador)
+
+--- clang -O2 ejecución: UB (el compilador puede plegar la comparación)
+$ /lab/build/m1/overflow_clang_O2
+1
+>> código de salida: 0 (informativo, no se verifica)
+
+--- clang -fsanitize=undefined
+$ clang -fsanitize=undefined c/overflow.c -o /lab/build/m1/overflow_clang_ubsan
+(sin mensajes del compilador)
+
+--- clang: ejecución con UBSan
+$ /lab/build/m1/overflow_clang_ubsan
+c/overflow.c:9:37: runtime error: signed integer overflow: 2147483647 + 1 cannot be represented in type 'int'
+SUMMARY: UndefinedBehaviorSanitizer: undefined-behavior c/overflow.c:9:37 
+0
+>> ESPERADO: se generó el reporte esperado (código 0; coincide /signed integer overflow/)
+
+==================== Rust — índice constante (rust_const.rs) ====================
+
+--- compilación
+$ rustc no-compila/rust_const.rs -o /lab/build/m1/rust_const
+error: this operation will panic at runtime
+ --> rust/no-compila/rust_const.rs:8:58
+  |
+8 | fn main() { let v = [10, 20, 30, 40, 50]; println!("{}", v[5]); }
+  |                                                          ^^^^ index out of bounds: the length is 5 but the index is 5
+  |
+  = note: `#[deny(unconditional_panic)]` on by default
+
+error: aborting due to 1 previous error
+>> ESPERADO: rechazado en compilación por el lint unconditional_panic
+
+==================== Rust — índice calculado (rust_dyn.rs) ====================
+
+--- get devuelve None; [] hace panic
+$ cargo run -q --bin rust_dyn
+None
+
+thread 'main' panicked at modulos/m1-limites/rust/src/bin/rust_dyn.rs:9:21:
+index out of bounds: the len is 5 but the index is 5
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+>> ESPERADO: falló como se esperaba (código 101; coincide /index out of bounds/)
+
+==================== Rust — get_unchecked fuera de rango (unsafe) ====================
+
+--- debug (puede abortar por la comprobación de precondición; depende de la versión)
+$ cargo run -q --bin get_unchecked
+
+thread 'main' panicked at modulos/m1-limites/rust/src/bin/get_unchecked.rs:9:32:
+unsafe precondition(s) violated: slice::get_unchecked requires that the index is within the slice
+
+This indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety.
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+thread caused non-unwinding panic. aborting.
+timeout: the monitored command dumped core
+docker : /lab/scripts/lib.sh: line 32:   163 Aborted                 timeout 
+"$TIEMPO_LIMITE" "$@" 2>&1
+En ínea: 1 Carácter: 1
++ docker run --rm -e LAB_IN_CONTAINER=1 -e HOME=/tmp -e CC=gcc -v "${PW ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (/lab/scripts/li...MITE" "$@" 2>&1 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+>> código de salida: 134 (informativo, no se verifica)
+
+--- --release: UB, resultado NO estable
+$ cargo run -q --release --bin get_unchecked
+timeout: the monitored command dumped core
+/lab/scripts/lib.sh: line 32:   214 Illegal instruction     timeout 
+"$TIEMPO_LIMITE" "$@" 2>&1
+>> código de salida: 132 (informativo, no se verifica)
+
+--- Miri
+$ cargo +nightly miri run -q --bin get_unchecked
+error: Undefined Behavior: `assume` called with `false`
+ --> modulos/m1-limites/rust/src/bin/get_unchecked.rs:9:30
+  |
+9 |     println!("{}", unsafe { *v.get_unchecked(i) });
+  |                              ^^^^^^^^^^^^^^^^^^ Undefined Behavior occurred here
+  |
+  = help: this indicates a bug in the program: it performed an invalid operation, and caused Undefined Behavior
+  = help: see https://doc.rust-lang.org/nightly/reference/behavior-considered-undefined.html for further information
+  = note: BACKTRACE:
+  = note: inside `main` at modulos/m1-limites/rust/src/bin/get_unchecked.rs:9:30: 9:48
+
+note: some details are omitted, run with `MIRIFLAGS=-Zmiri-backtrace=full` for a verbose backtrace
+
+error: aborting due to 1 previous error
+>> ESPERADO: falló como se esperaba (código 1; coincide /Undefined Behavior/)
+
+==================== Rust — overflow ====================
+
+--- debug
+$ cargo run -q --bin overflow
+
+thread 'main' panicked at modulos/m1-limites/rust/src/bin/overflow.rs:6:20:
+attempt to add with overflow
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+>> ESPERADO: falló como se esperaba (código 101; coincide /attempt to add with overflow/)
+
+--- --release: envuelve (overflow-checks desactivado)
+$ cargo run -q --release --bin overflow
+-2147483648
+>> código de salida: 0 (informativo, no se verifica)
+
+==================== Java — overflow ====================
+
+--- Overflow.java
+$ java Overflow.java
+-2147483648
+Exception in thread "main" java.lang.ArithmeticException: integer overflow
+	at java.base/java.lang.Math.addExact(Math.java:911)
+	at Overflow.main(Overflow.java:7)
+>> ESPERADO: falló como se esperaba (código 1; coincide /ArithmeticException/)
+
+==================== Java — arreglo de cinco (Bounds.java, lo escribe el estudiante) ====================
+
+--- Bounds.java
+$ java Bounds.java
+Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: Index 5 out of bounds for length 5
+	at Bounds.main(Bounds.java:12)
+>> ESPERADO: falló como se esperaba (código 1; coincide /ArrayIndexOutOfBoundsException/)
+
+RESUMEN: todos los casos se comportaron como se esperaba.

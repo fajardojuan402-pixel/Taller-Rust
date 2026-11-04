@@ -1,0 +1,64 @@
+
+==================== Java — lost update (Carrera.java, 5 ejecuciones) ====================
+ejecución 1: 125611
+ejecución 2: 400000
+ejecución 3: 139588
+ejecución 4: 215207
+ejecución 5: 187659
+>> ESPERADO: se perdieron incrementos en 4 de 5 ejecuciones (data race bajo el JMM, no UB)
+
+==================== C — data race con pthread (compilador: gcc, solo con TSan) ====================
+AVISO: este contenedor no permite desactivar ASLR; TSan puede fallar con
+       'unexpected memory mapping'. Vea modulos/m3-concurrencia/README.md.
+
+--- -g -O1 -fsanitize=thread
+$ gcc -g -O1 -fsanitize=thread -pthread carrera.c -o /lab/build/m3/carrera_tsan
+(sin mensajes del compilador)
+
+--- ejecución con TSan (data race: ESPERADO)
+$ /lab/build/m3/carrera_tsan
+FATAL: ThreadSanitizer: unexpected memory mapping 0x6407e1502000-0x6407e1503000
+>> NO ESPERADO: código 66; se esperaba fallo con /ThreadSanitizer: data race/
+
+==================== Rust — Rc entre hilos ====================
+
+--- rc_hilos.rs (Rc no es Send)
+$ rustc --edition 2021 no-compila/rc_hilos.rs -o /lab/build/m3/rc_hilos
+error[E0277]: `Rc<i32>` cannot be sent between threads safely
+ --> no-compila/rc_hilos.rs:9:19
+  |
+9 |     thread::spawn(move || println!("{}", c2)).join().unwrap();
+  |     ------------- -------^^^^^^^^^^^^^^^^^^^
+  |     |             |
+  |     |             `Rc<i32>` cannot be sent between threads safely
+  |     |             within this `{closure@no-compila/rc_hilos.rs:9:19: 9:26}`
+  |     required by a bound introduced by this call
+  |
+  = help: within `{closure@no-compila/rc_hilos.rs:9:19: 9:26}`, the trait `Send` is not implemented for `Rc<i32>`
+note: required because it's used within this closure
+ --> no-compila/rc_hilos.rs:9:19
+  |
+9 |     thread::spawn(move || println!("{}", c2)).join().unwrap();
+  |                   ^^^^^^^
+note: required by a bound in `spawn`
+ --> /rustc/1159e78c4747b02ef996e55082b704c09b970588/library/std/src/thread/mod.rs:723:1
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0277`.
+>> ESPERADO: falló como se esperaba (código 1; coincide /E0277/)
+
+==================== Rust — dos Mutex adquiridos en orden opuesto ====================
+
+--- deadlock (ESPERADO: no termina)
+$ timeout 5 cargo run -q --bin deadlock
+>> ESPERADO: no terminó en 5s y timeout lo detuvo (código 124): bloqueo
+docker : RESUMEN: 1 caso(s) NO se comportaron como se esperaba.
+En ínea: 1 Carácter: 1
++ docker run --rm -e LAB_IN_CONTAINER=1 -e HOME=/tmp -v "${PWD}:/lab" - ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (RESUMEN: 1 caso...mo se esperaba. 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+

@@ -16,10 +16,13 @@
   normalizaron a fin de línea LF (el clon en Windows los dejó en CRLF y bash
   fallaba con `$'\r'`).
 
-> Regla: la columna **Predicción** se registró **antes** de ejecutar. El
-> **Resultado observado** proviene de la ejecución dentro del contenedor
-> (`make m1/m2/m3/minivec`), con el comando exacto y el archivo de `EVIDENCIAS/`
-> indicados en cada sección.
+> Nota sobre las predicciones: la columna **Predicción** se escribió **antes**
+> de correr cada caso. Sin embargo, toda la entrega (predicciones y resultados)
+> se subió al repositorio en un **único commit**, por lo que el historial de git
+> no sirve como prueba del orden temporal: no puedo demostrar con el repo que las
+> predicciones se registraran antes de ejecutar. El **Resultado observado**
+> proviene de la ejecución dentro del contenedor (`make m1/m2/m3/minivec`), con
+> el comando exacto y el archivo de `EVIDENCIAS/` indicados en cada sección.
 
 > Nota sobre comportamiento indefinido (UB): los casos de C con `-O0`/`-O2` no
 > producen un "dato estable". El valor impreso puede variar entre compilador,
@@ -33,19 +36,25 @@
 | Caso | Predicción | ¿Compila? | ¿Cuándo se detecta? | Resultado observado | ¿Qué garantía aporta? |
 | --- | --- | --- | --- | --- | --- |
 | C, índice calculado (a `-O0`, b `-O2 -Wall -Wextra`, c `-g -O1 -fsanitize=address`) | (a) compila, imprime basura o crashea, no fiable; (b) compila, posiblemente sin warning por índice calculado; (c) ASan reporta stack-buffer-overflow | Sí | (a)(b) en ejecución, no fiable (UB); (c) en ejecución con ASan | Observado: (a) imprimió `32765`, (b) `32767` (valores distintos → UB, no estable); (c) ASan: `stack-buffer-overflow ... READ of size 4 ... 'values' <== overflows this variable`, abortó | Ninguna garantía del lenguaje; solo ASan detecta el acceso fuera de límites |
-| Rust, constante (`v[5]`) | No compila: lint `unconditional_panic` (deny) | No | En compilación (lint) | Ver `EVIDENCIAS/m1.txt` | El compilador prueba que ese índice constante siempre haría panic |
-| Rust, calculado (`get` y `[]`) | `v.get(i)` → `None`; `v[i]` → panic "index out of bounds" | Sí | En ejecución | Ver `EVIDENCIAS/m1.txt` | Comprobación de límites en ejecución; nunca acceso fuera de rango |
-| Rust, `get_unchecked` (debug / release / Miri) | debug: posible abort "unsafe precondition violated" (rustc ≥1.78); release: UB, no estable; Miri: reporta "Undefined Behavior" | Sí | debug: ejecución; release: no detectado; Miri: ejecución | Ver `EVIDENCIAS/m1.txt` | `unsafe` traslada la obligación al programador; solo Miri confirma el UB |
-| Java, arreglo de 5 (`Bounds.java`) | `ArrayIndexOutOfBoundsException` ("Index 5 out of bounds for length 5") | Sí | En ejecución (excepción) | Ver `EVIDENCIAS/m1.txt` | Comprobación de límites del runtime de la JVM |
-| Overflow C / Rust / Java | C: UB; clang+UBSan reporta "signed integer overflow", gcc puede plegar `x+1>x`→1 y ocultarlo. Rust: debug panic "attempt to add with overflow", release envuelve a `-2147483648`. Java: línea 1 envuelve (−2147483648), `Math.addExact` lanza `ArithmeticException` | Sí (todos) | C: ejecución con UBSan; Rust: debug ejecución / release nunca; Java: ejecución (solo `addExact`) | Observado en C: gcc `-O0`/`-O2`/UBSan imprimieron `1` (gcc plegó `x+1>x`→1, UBSan no vio la suma); clang `-O0` imprimió `0`. Rust/Java: ver `EVIDENCIAS/m1.txt` | C: ninguna (UB); Rust debug: panic defensivo; Java: wrap definido + chequeo opcional explícito |
+| Rust, constante (`v[5]`) | No compila: lint `unconditional_panic` (deny) | No | En compilación (lint) | Observado: `error: this operation will panic at runtime ... index out of bounds: the length is 5 but the index is 5`, con `#[deny(unconditional_panic)]`; no compila | El compilador prueba que ese índice constante siempre haría panic |
+| Rust, calculado (`get` y `[]`) | `v.get(i)` → `None`; `v[i]` → panic "index out of bounds" | Sí | En ejecución | Observado: `v.get(i)` imprimió `None`; `v[i]` hizo `panicked ... index out of bounds: the len is 5 but the index is 5` (código 101) | Comprobación de límites en ejecución; nunca acceso fuera de rango |
+| Rust, `get_unchecked` (debug / release / Miri) | debug: posible abort "unsafe precondition violated" (rustc ≥1.78); release: UB, no estable; Miri: reporta "Undefined Behavior" | Sí | debug: ejecución; release: no detectado; Miri: ejecución | Observado: debug abortó con `unsafe precondition(s) violated: slice::get_unchecked requires that the index is within the slice` (código 134); release abortó con `Illegal instruction` (código 132, UB no estable); Miri: `Undefined Behavior: ` + "`assume` called with `false`" | `unsafe` traslada la obligación al programador; solo Miri confirma el UB de forma fiable |
+| Java, arreglo de 5 (`Bounds.java`) | `ArrayIndexOutOfBoundsException` ("Index 5 out of bounds for length 5") | Sí | En ejecución (excepción) | Observado: `ArrayIndexOutOfBoundsException: Index 5 out of bounds for length 5` (código 1) | Comprobación de límites del runtime de la JVM |
+| Overflow C / Rust / Java | C: UB; clang+UBSan reporta "signed integer overflow", gcc puede plegar `x+1>x`→1 y ocultarlo. Rust: debug panic "attempt to add with overflow", release envuelve a `-2147483648`. Java: línea 1 envuelve (−2147483648), `Math.addExact` lanza `ArithmeticException` | Sí (todos) | C: ejecución con UBSan; Rust: debug ejecución / release nunca; Java: ejecución (solo `addExact`) | Observado — C: gcc `-O0`/`-O2`/UBSan imprimieron `1` (gcc plegó `x+1>x`→1, UBSan no vio la suma); clang `-O0` imprimió `0`, clang+UBSan reportó `runtime error: signed integer overflow: 2147483647 + 1 cannot be represented in type 'int'`. Rust: debug `panicked ... attempt to add with overflow` (código 101); release imprimió `-2147483648`. Java: `-2147483648` (wrap) y luego `ArithmeticException: integer overflow` en `Math.addExact` | C: ninguna (UB); Rust debug: panic defensivo; Java: wrap definido + chequeo opcional explícito |
 
 **Comandos y evidencias:**
 
 ```bash
-make versions > entregas/solucion/EVIDENCIAS/versions.txt
-make m1 2>&1 | tee entregas/solucion/EVIDENCIAS/m1.txt
-make m1 CC=clang 2>&1 | tee entregas/solucion/EVIDENCIAS/m1-clang.txt   # comparar gcc vs clang en overflow.c
+make versions > entregas/fajardojuan402-pixel/EVIDENCIAS/versions.txt
+make m1 2>&1 | tee entregas/fajardojuan402-pixel/EVIDENCIAS/m1.txt
 ```
+
+> `m1.txt` ya incluye la comparación gcc vs clang en `overflow.c`: el script
+> `run-expect-fail.sh` compila ese caso con **ambos** compiladores en la misma
+> ejecución (gcc imprime `1` por el plegado de `x+1>x`, clang imprime `0` y su
+> UBSan reporta el overflow). No se generó un `m1-clang.txt` aparte. Si se
+> quisiera forzar clang también en el resto de casos del módulo:
+> `make m1 CC=clang 2>&1 | tee entregas/fajardojuan402-pixel/EVIDENCIAS/m1-clang.txt`.
 
 **Análisis.**
 
@@ -229,7 +238,7 @@ Java — overflow: wrap en la primera línea y `ArithmeticException` con `addExa
 **Comandos y evidencias:**
 
 ```bash
-make m2 2>&1 | tee entregas/solucion/EVIDENCIAS/m2.txt
+make m2 2>&1 | tee entregas/fajardojuan402-pixel/EVIDENCIAS/m2.txt
 # A mano, dentro del contenedor:
 #   rustc no-compila/a_move.rs       -> E0382
 #   rustc no-compila/b_push_iter.rs  -> E0502
@@ -267,7 +276,7 @@ Java — caché estático: crecimiento del heap y `OutOfMemoryError`:
 | Programa | Clasificación | ¿Qué lo detecta? | Evidencia |
 | --- | --- | --- | --- |
 | Java `Carrera` | Error lógico (lost update); **no** es UB | Nada automático; se observa como resultado < 400000 e inestable | `EVIDENCIAS/m3.txt` |
-| C `carrera.c` (TSan) | Data race = **UB** | ThreadSanitizer (ver nota de entorno) | `EVIDENCIAS/m3.txt` |
+| C `carrera.c` (TSan) | Data race = **UB** | ThreadSanitizer: `data race ... global 'contador' ... in trabajar` (ver nota de entorno) | `EVIDENCIAS/m3-tsan.txt` |
 | Rust `Rc` entre hilos | No compila (defecto de diseño rechazado) | Compilador: error **E0277** (`Rc` no es `Send`) | `EVIDENCIAS/m3.txt` |
 | Rust dos `Mutex` | Deadlock; es memory-safe pero no termina | `timeout` (código de salida 124); ni compilador ni sanitizer | `EVIDENCIAS/m3.txt` |
 
@@ -331,34 +340,62 @@ Java — caché estático: crecimiento del heap y `OutOfMemoryError`:
   "terminado sin deadlock" y sale con código 0
   (`EVIDENCIAS/correcciones-verif.txt`, fuente en `correcciones/deadlock_fix.rs`).
 
-- **Nota de entorno (TSan).** En este contenedor TSan no pudo ejecutar
-  `carrera.c`: aborta con `FATAL: ThreadSanitizer: unexpected memory mapping`
-  porque Docker Desktop no permite desactivar ASLR (limitación conocida y
-  advertida por el propio script, ver `EVIDENCIAS/m3.txt`). La clasificación
-  del caso no cambia: el acceso concurrente no sincronizado a `contador` desde
-  cuatro hilos es una **data race**, y en C es **comportamiento indefinido**;
-  TSan es la herramienta que la reportaría (`WARNING: ThreadSanitizer: data
-  race`) en un host que permita `--privileged`/ASLR off. Para reproducirlo:
-  `docker run --privileged ...` o ejecutar en Linux nativo con
-  `sysctl kernel.randomize_va_space=0`.
+- **Nota de entorno (TSan).** En la ejecución normal de `make m3` (sin
+  privilegios) TSan **no pudo** ejecutar `carrera.c`: abortó con
+  `FATAL: ThreadSanitizer: unexpected memory mapping` porque el ASLR del kernel
+  de la VM de Docker Desktop sigue activo (ver `EVIDENCIAS/m3.txt`). `--privileged`
+  por sí solo **tampoco** bastó (mismo fallo). Sí se logró reproducir
+  desactivando ASLR por proceso con `setarch -R` dentro de un contenedor
+  privilegiado:
 
-- **Discusión: contador con `Relaxed`; memory safety vs. thread safety vs.
-  correctness.** Un `AtomicUsize` con `fetch_add(1, Ordering::Relaxed)` basta
-  para un **contador**: la operación sigue siendo atómica (no hay lost update) y
-  `Relaxed` solo renuncia a garantías de *ordenamiento* entre otras variables,
-  que un contador aislado no necesita. Esto ilustra tres propiedades
-  independientes: **memory safety** (no hay accesos inválidos ni UB), **thread
-  safety** (no hay data races: el tipo del dato y la sincronización lo impiden) y
-  **correctness** (el resultado lógico es el esperado). Rust garantiza las dos
-  primeras en código seguro (p. ej. rechaza `Rc` entre hilos, exige `Mutex`/
-  atómicos para compartir mutable), pero **no** la tercera: un programa puede ser
+  ```bash
+  docker run --rm --privileged --cap-add SYS_PTRACE -e LAB_IN_CONTAINER=1 \
+    -e HOME=/tmp -v "${PWD}:/lab" -w /lab/modulos/m3-concurrencia lab-memoria:1.0 \
+    bash -c "gcc -g -O1 -fsanitize=thread -pthread c/carrera.c -o /tmp/carrera_tsan \
+             && setarch -R /tmp/carrera_tsan"
+  ```
+
+  Resultado (`EVIDENCIAS/m3-tsan.txt`): `WARNING: ThreadSanitizer: data race`,
+  `Location is global 'contador' of size 4 ... in trabajar`
+  (`c/carrera.c:14`), 2 warnings, código de salida 66. Esto confirma el
+  diagnóstico: el acceso concurrente no sincronizado a `contador` desde cuatro
+  hilos es una **data race**, y en C es **comportamiento indefinido**.
+
+- **Discusión: por qué `Relaxed` no basta para publicar un dato; memory safety
+  vs. thread safety vs. correctness.** Un `store`/`load` sobre un atómico con
+  `Ordering::Relaxed` **no tiene data race**: el acceso es atómico y está
+  definido por el modelo de memoria (a diferencia de C, donde el acceso
+  concurrente a un `int` normal sería UB). Pero `Relaxed` **no establece una
+  relación happens-before** entre hilos: solo garantiza atomicidad y coherencia
+  sobre *esa misma* variable, no ordena los demás accesos a memoria alrededor de
+  ella. Por eso no sirve para **publicar un dato** a otro hilo. Patrón típico:
+  un hilo escribe `datos = ...;` y luego `listo.store(true, Relaxed)`; otro hace
+  `while !listo.load(Relaxed) {}` y después lee `datos`. Con `Relaxed` el lector
+  puede ver la **bandera en `true` pero el dato aún sin escribir** (o escrito a
+  medias), porque nada obliga a que la escritura de `datos` sea visible antes que
+  la de la bandera. La solución es usar **`Release` en el `store` de la bandera**
+  y **`Acquire` en el `load`**: el par Release→Acquire crea el happens-before que
+  garantiza que todo lo escrito antes del `store(Release)` sea visible tras el
+  `load(Acquire)` que observa ese valor. (Para un **contador** aislado, en
+  cambio, `fetch_add(1, Relaxed)` sí es suficiente, porque solo importa la
+  atomicidad de esa variable, no publicar otros datos.)
+
+  Esto ilustra tres propiedades independientes: **memory safety** (no hay accesos
+  inválidos ni UB), **thread safety** (no hay data races: el tipo atómico y la
+  sincronización lo impiden) y **correctness** (el resultado lógico es el
+  esperado). El caso `Relaxed` muestra que las tres no son lo mismo: el programa
+  con la bandera en `Relaxed` es memory-safe y está libre de data races (thread
+  safety), y aun así es **incorrecto** porque la falta de ordenamiento
+  happens-before deja ver el dato a medio publicar. Rust garantiza las dos
+  primeras en código seguro (rechaza `Rc` entre hilos, exige `Mutex`/atómicos
+  para compartir mutable), pero **no** la tercera: un programa puede ser
   memory-safe y thread-safe y aun así hacer deadlock o dar un resultado lógico
-  incorrecto.
+  incorrecto por elegir mal el ordering.
 
 **Comandos y evidencias:**
 
 ```bash
-make m3 2>&1 | tee entregas/solucion/EVIDENCIAS/m3.txt
+make m3 2>&1 | tee entregas/fajardojuan402-pixel/EVIDENCIAS/m3.txt
 # A mano:
 #   for i in 1 2 3 4 5; do java java/Carrera.java; done      -> dispersión < 400000
 #   gcc -g -O1 -fsanitize=thread -pthread c/carrera.c -o /tmp/carrera && /tmp/carrera  -> TSan data race
@@ -588,22 +625,22 @@ mantenimiento/experiencia del equipo.
 Para un servicio con **latencia predecible y control estricto de recursos**
 —por ejemplo un proxy o motor de datos de alto rendimiento— recomiendo **Rust**.
 El laboratorio muestra que elimina en compilación clases enteras de fallos que en
-**C** son comportamiento indefinido (índice fuera de rango, use-after-free, data
-races: evidencia en `indice.c` con ASan y `carrera.c` con TSan) y que en **Java**
-aparecen tarde o se diluyen (índices y `ConcurrentModificationException` en
-runtime, data races no-UB pero incorrectas, y pausas de GC más retención de
-objetos como en `CacheEstatico`). Rust lo consigue sin recolector de basura, lo
-que favorece la latencia de cola y el control del *layout* de memoria.
+**C** son comportamiento indefinido (índice fuera de rango en `indice.c` con
+ASan; data race en `carrera.c` con TSan) y que en **Java** aparecen tarde o se diluyen (índices y
+`ConcurrentModificationException` en runtime, data races no-UB pero incorrectas,
+y retención de objetos más pausas de GC, como en `CacheEstatico`). Rust lo
+consigue sin recolector de basura, lo que favorece la latencia de cola y el
+control del *layout* de memoria.
 
-Los **trade-offs** son reales y están respaldados por evidencia del propio
-taller: Rust no es infalible. Sus garantías terminan en `RefCell` (panic en
-runtime, no prueba estática), en los **deadlocks** (`deadlock.rs` es seguro en
-memoria y aun así no termina), en las **fugas** (ciclos de `Rc`) y en el código
-`unsafe`, donde el bug de soundness de `minivec` solo lo reveló Miri —y una
-ejecución limpia de Miri no demuestra ausencia de UB. A eso se suma un costo de
-desarrollo mayor (lifetimes, curva de aprendizaje). **Java** sigue siendo buena
-elección cuando la productividad y el ecosistema pesan más que la latencia de
-cola, y **C** cuando se requiere interoperar con bases heredadas o control
-extremo asumiendo la carga de verificación externa. La recomendación de Rust es,
-por tanto, condicionada al contexto y a confirmarse con benchmarks de la carga
-real y perfiles de latencia, no un absoluto de rendimiento.
+Los **trade-offs** son reales y están respaldados por evidencia del taller: Rust
+no es infalible. Sus garantías terminan en `RefCell` (panic en runtime, no prueba
+estática), en los **deadlocks** (`deadlock.rs` es seguro en memoria y aun así no
+termina), en las **fugas** (ciclos de `Rc`) y en el código `unsafe`, donde el bug
+de soundness de `minivec` solo lo reveló Miri; y una ejecución limpia de Miri no
+demuestra ausencia de UB. Se suma un costo de desarrollo mayor (lifetimes, curva
+de aprendizaje). **Java** sigue siendo buena elección cuando la productividad y
+el ecosistema pesan más que la latencia de cola, y **C** cuando hay que
+interoperar con bases heredadas asumiendo la verificación externa. La
+recomendación de Rust es, por tanto, condicionada al contexto y a confirmarse con
+benchmarks de la carga real y perfiles de latencia, no un absoluto de
+rendimiento.

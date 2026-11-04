@@ -8,6 +8,10 @@
 Makefile text eol=lf
 Dockerfile text eol=lf
 
+# Evidencias de texto: conservar LF (se reconstruyeron en UTF-8 sin BOM con LF).
+*.txt   text eol=lf
+*.md    text eol=lf
+
 # Imagenes y binarios: tratar como binario (sin conversion de EOL).
 *.png   binary
 *.docx  binary

@@ -1,0 +1,82 @@
+
+==================== Rust — puzzles que NO compilan ====================
+
+--- Puzzle A: move
+$ rustc --edition 2021 no-compila/a_move.rs -o /lab/build/m2/a_move
+error[E0382]: borrow of moved value: `first`
+ --> no-compila/a_move.rs:7:16
+  |
+5 |     let first = String::from("Hola");
+  |         ----- move occurs because `first` has type `String`, which does not implement the `Copy` trait
+6 |     let second = first;
+  |                  ----- value moved here
+7 |     println!("{first} {second}");
+  |                ^^^^^ value borrowed here after move
+  |
+  = note: this error originates in the macro `$crate::format_args_nl` which comes from the expansion of the macro `println` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider cloning the value if the performance cost is acceptable
+  |
+6 |     let second = first.clone();
+  |                       ++++++++
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0382`.
+>> ESPERADO: falló como se esperaba (código 1; coincide /E0382/)
+
+--- Puzzle B: push mientras se itera
+$ rustc --edition 2021 no-compila/b_push_iter.rs -o /lab/build/m2/b_push_iter
+error[E0502]: cannot borrow `v` as mutable because it is also borrowed as immutable
+ --> no-compila/b_push_iter.rs:8:22
+  |
+7 |     for x in &v {
+  |              --
+  |              |
+  |              immutable borrow occurs here
+  |              immutable borrow later used here
+8 |         if *x == 2 { v.push(4); }
+  |                      ^^^^^^^^^ mutable borrow occurs here
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0502`.
+>> ESPERADO: falló como se esperaba (código 1; coincide /E0502/)
+
+==================== Rust — RefCell (compila; comprobación en ejecución) ====================
+
+--- dos borrow_mut simultáneos
+$ cargo run -q --bin refcell
+
+thread 'main' panicked at modulos/m2-ownership/rust/src/bin/refcell.rs:9:16:
+RefCell already borrowed
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+>> ESPERADO: falló como se esperaba (código 101; coincide /already (mutably )?borrowed|BorrowMutError/)
+
+==================== Java — for-each sobre ArrayList (esqueleto con TODO) ====================
+
+--- ForEach.java
+$ java ForEach.java
+[1, 2, 3]
+PENDIENTE: complete el TODO de java/ForEach.java y vuelva a ejecutar (código 0).
+
+==================== Java — cachér estático que retiene objetos ====================
+
+--- CacheEstatico.java con heap de 128 MiB
+$ java -Xmx128m CacheEstatico.java
+peticiones=8 heap usado tras GC=19 MiB
+peticiones=16 heap usado tras GC=35 MiB
+peticiones=24 heap usado tras GC=51 MiB
+peticiones=32 heap usado tras GC=67 MiB
+peticiones=40 heap usado tras GC=83 MiB
+peticiones=48 heap usado tras GC=99 MiB
+peticiones=56 heap usado tras GC=115 MiB
+Exception in thread "main" java.lang.OutOfMemoryError: Java heap space
+	at CacheEstatico.procesar(CacheEstatico.java:12)
+	at CacheEstatico.main(CacheEstatico.java:19)
+	at java.base/java.lang.invoke.LambdaForm$DMH/0x00007228c0031000.invokeStatic(LambdaForm$DMH)
+	at java.base/java.lang.invoke.LambdaForm$MH/0x00007228c0149800.invoke(LambdaForm$MH)
+	at java.base/java.lang.invoke.Invokers$Holder.invokeExact_MT(Invokers$Holder)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invokeImpl(DirectMethodHandleAccessor.java:154)
+>> ESPERADO: falló como se esperaba (código 1; coincide /OutOfMemoryError/)
+
+RESUMEN: todos los casos se comportaron como se esperaba.
